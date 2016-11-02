@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component LANGUAGE_LEVEL="JDK_1_5" inheritJdk="true">
+	<output-test url="file://$MODULE_DIR$/target/test-classes"/>
+	<contentEntry url="file://$MODULE_DIR$">
+		<testFolder url="file://$MODULE_DIR$/src/test/java"/>
+		<excludeFolder url="file://$MODULE_DIR$/target"/>
+	</contentEntry>
+	<levels>
+		<level name="Maven: edu.stanford.nlp:stanford-corenlp:3.6.0" value="project"/>
+		<level name="Maven: com.io7m.xom:xom:1.2.10" value="project"/>
+		<level name="Maven: xml-apis:xml-apis:1.3.03" value="project"/>
+		<level name="Maven: xerces:xercesImpl:2.8.0" value="project"/>
+		<level name="Maven: xalan:xalan:2.7.0" value="project"/>
+		<level name="Maven: joda-time:joda-time:2.9" value="project"/>
+		<level name="Maven: de.jollyday:jollyday:0.4.7" value="project"/>
+		<level name="Maven: javax.xml.bind:jaxb-api:2.2.7" value="project"/>
+		<level name="Maven: com.googlecode.efficient-java-matrix-library:ejml:0.23" value="project"/>
+		<level name="Maven: javax.json:javax.json-api:1.0" value="project"/>
+		<level name="Maven: org.slf4j:slf4j-api:1.7.12" value="project"/>
+		<level name="Maven: edu.stanford.nlp:stanford-corenlp:models:3.6.0" value="project"/>
+		<level name="Maven: com.google.protobuf:protobuf-java:3.0.2" value="project"/>
+	</levels>
+</component>
