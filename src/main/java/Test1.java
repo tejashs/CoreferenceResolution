@@ -21,7 +21,7 @@ public class Test1 {
         StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
 
 // read some text in the text variable
-        String text = "John gifted a car to Mary"; // Add your text here!
+        String text = "John who works at IBM, gifted a car to Mary"; // Add your text here!
 
 // create an empty Annotation just with the given text
         Annotation document = new Annotation(text);
@@ -43,6 +43,7 @@ public class Test1 {
                 String pos = token.get(CoreAnnotations.PartOfSpeechAnnotation.class);
                 // this is the NER label of the token
                 String ne = token.get(CoreAnnotations.NamedEntityTagAnnotation.class);
+                System.out.println(ne);
             }
 
             // this is the parse tree of the current sentence

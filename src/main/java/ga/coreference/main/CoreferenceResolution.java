@@ -2,7 +2,6 @@ package ga.coreference.main;
 
 import edu.stanford.nlp.io.IOUtils;
 import edu.stanford.nlp.ling.CoreAnnotations;
-import edu.stanford.nlp.ling.Label;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.trees.Tree;
@@ -11,6 +10,7 @@ import edu.stanford.nlp.util.CoreMap;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -19,11 +19,13 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
 public class CoreferenceResolution {
     private Logger logger;
+    private ArrayList<String> originalSentences;
 
     public static void main(String[] args) {
 
@@ -34,43 +36,46 @@ public class CoreferenceResolution {
         resolver.startResolution(fileName);
     }
 
-    public void startResolution(String fileName){
+    public void startResolution(String fileName) {
         ClassLoader classLoader = getClass().getClassLoader();
         File f = new File(classLoader.getResource(fileName).getFile());
         //Get All COREF Tags from file
         NodeList coRefTagList = getAllCoRefTagsInFile(f);
         ArrayList<Tree> listOfParseTrees = getParseTreesForFile(f);
         logger.debug(coRefTagList);
-
-
+        TreeHelper treeHelper = TreeHelper.getInstance();
+        for (int i = 0; i < coRefTagList.getLength(); i++) {
+            Node node = coRefTagList.item(i);
+            if (i == 9) {
+                treeHelper.getTreeForCoRefTag(node, listOfParseTrees);
+            }
+        }
     }
 
     private ArrayList<Tree> getParseTreesForFile(File file) {
-        Properties props = new Properties();
-        props.setProperty("annotators", "tokenize, ssplit, pos, lemma, ner, parse, dcoref");
-        StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
-        Annotation annotatedDoc = null;
+        String fileText = "";
         try {
-            String fileText = IOUtils.slurpFile(file);
-            logger.debug(fileText);
-            fileText = fileText.replaceAll("\\<[^\\>]+\\>", "");
-            fileText = fileText.replaceAll("\\n\\n", ".\n\n");
-            logger.debug(fileText);
-            annotatedDoc = new Annotation(fileText);
+            fileText = IOUtils.slurpFile(file);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        pipeline.annotate(annotatedDoc);
-        List<CoreMap> sentences = annotatedDoc.get(CoreAnnotations.SentencesAnnotation.class);
+        fileText = fileText.replaceAll("\\n\\n", ".\n\n");
+        String[] sentencesInFile = fileText.split("\\.");
+        originalSentences = new ArrayList<String>();
+        originalSentences.addAll(Arrays.asList(sentencesInFile));
+
+        //fileText = stripCoRefTags(fileText);
+
+        List<CoreMap> sentences = getParsedSentences(fileText);
         logger.debug("Sentences: " + sentences.size());
+
         int validSentenceCounter = 0;
         ArrayList<Tree> listOfTrees = new ArrayList<Tree>();
         for (CoreMap sentence : sentences) {
-            if(sentence.toString().equals(".")){
+            if (sentence.toString().equals(".")) {
                 continue;
             }
             validSentenceCounter++;
-            logger.debug("SENTENCE " + validSentenceCounter + " - " + sentence);
             // this is the parse tree of the current sentence
             Tree tree = sentence.get(TreeCoreAnnotations.TreeAnnotation.class);
             listOfTrees.add(tree);
@@ -79,6 +84,17 @@ public class CoreferenceResolution {
         }
         logger.debug("Valid Sentences Count : " + validSentenceCounter);
         return listOfTrees;
+    }
+
+    private List<CoreMap> getParsedSentences(String textToParse){
+        Properties props = new Properties();
+        props.setProperty("annotators", "tokenize, ssplit, pos, lemma, ner, parse");
+        StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
+        Annotation annotatedDoc = null;
+        annotatedDoc = new Annotation(textToParse);
+        pipeline.annotate(annotatedDoc);
+        List<CoreMap> sentences = annotatedDoc.get(CoreAnnotations.SentencesAnnotation.class);
+        return sentences;
     }
 
     private NodeList getAllCoRefTagsInFile(File f) {
@@ -94,7 +110,7 @@ public class CoreferenceResolution {
             e.printStackTrace();
         }
         NodeList listOfTags = null;
-        if(document != null){
+        if (document != null) {
             logger.debug("Parsed");
             listOfTags = document.getElementsByTagName("COREF");
             logger.debug(listOfTags.getLength());
@@ -102,20 +118,33 @@ public class CoreferenceResolution {
         return listOfTags;
     }
 
-    private void printTree(Tree tree){
+    private void printTree(Tree tree) {
         List<Tree> children = tree.getChildrenAsList();
-        for (Tree child: children) {
+        for (Tree child : children) {
             String label = child.label().value();
-            if(label.equals("NP")){
+            if (label.equals("NP")) {
                 logger.debug("NP: " + child.toString());
             }
             child.taggedYield();
-            if(child.isLeaf()){
+            if (child.isLeaf()) {
                 logger.debug("LEAF: " + child);
-            }
-            else {
+            } else {
                 printTree(child);
             }
         }
     }
+
+    private String stripCoRefTags(String text) {
+        return text.replaceAll("\\<[^\\>]+\\>", "");
+    }
+
+    private String getOriginalSentenceForCoRefTag(String coRefTag, ArrayList<String> listOfSentences) {
+        for (String sentence : listOfSentences) {
+            if (sentence.contains(coRefTag)) {
+                return sentence;
+            }
+        }
+        return null;
+    }
+
 }
