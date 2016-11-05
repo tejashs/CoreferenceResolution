@@ -31,7 +31,7 @@ public class CoreferenceResolution {
 
         String fileName = "a8.crf";
         CoreferenceResolution resolver = new CoreferenceResolution();
-        resolver.logger = Logger.getLogger(CoreferenceResolution.class);
+        resolver.logger = resolver.getLogger();
         BasicConfigurator.configure();
         resolver.startResolution(fileName);
     }
@@ -45,9 +45,15 @@ public class CoreferenceResolution {
         logger.debug(coRefTagList);
         TreeHelper treeHelper = TreeHelper.getInstance();
         for (int i = 0; i < coRefTagList.getLength(); i++) {
+            Tree nodeinTree = null;
             Node node = coRefTagList.item(i);
-            if (i == 9) {
-                treeHelper.getTreeForCoRefTag(node, listOfParseTrees);
+            nodeinTree = treeHelper.getTreeForCoRefTag(node, listOfParseTrees);
+            getLogger().debug(node.getTextContent());
+            if(nodeinTree == null){
+                getLogger().debug("WTF WTF WTF");
+            }
+            else {
+                getLogger().debug(nodeinTree);
             }
         }
     }
@@ -145,6 +151,9 @@ public class CoreferenceResolution {
             }
         }
         return null;
+    }
+    private Logger getLogger(){
+        return Logger.getLogger(CoreferenceResolution.class);
     }
 
 }

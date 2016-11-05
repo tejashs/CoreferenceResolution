@@ -1,5 +1,7 @@
 package ga.coreference.main;
 
+import edu.stanford.nlp.util.StringUtils;
+
 import java.util.ArrayList;
 
 /**
@@ -42,4 +44,6 @@ public class POSUtility {
     public static boolean checkIfTagIsNounRelated(String tag){
         return nounRelatedTags.contains(tag);
     }
+
+
 }
