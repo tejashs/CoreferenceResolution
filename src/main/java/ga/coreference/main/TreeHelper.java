@@ -7,7 +7,6 @@ import org.apache.log4j.Logger;
 import org.w3c.dom.Node;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -64,46 +63,9 @@ public class TreeHelper {
                 if(tree != null){
                     return tree;
                 }
-
             }
         }
         return null;
-    }
-
-    private String getTextValueForTree(Tree child, boolean skipCoRefTag) {
-        List<Word> words = child.yieldWords();
-        StringBuilder builder = new StringBuilder();
-        for (Word w : words) {
-            if(skipCoRefTag){
-                if(w.value().contains("COREF")){
-                    continue;
-                }
-            }
-            builder.append(w.value().trim());
-            builder.append(" ");
-        }
-        return builder.toString().trim();
-    }
-
-    private String cleanupSentence(String sentence) {
-        sentence = sentence.replaceAll("\\.", " ");
-        sentence = sentence.replaceAll("\\n", " ");
-        return sentence.trim();
-    }
-
-    private String getNodeValueToCompare(Node node, boolean shouldCompareID) {
-        StringBuilder sb = new StringBuilder();
-        if(shouldCompareID) {
-            sb.append(node.getAttributes().item(0).getNodeName());
-            sb.append("=");
-            sb.append("\"");
-            sb.append(node.getAttributes().item(0).getNodeValue());
-            sb.append("\"");
-        }
-        else {
-            sb.append(node.getTextContent().replaceAll("\\n", " "));
-        }
-        return sb.toString();
     }
 
     private Tree narrowDownOnLeafNode(Node node, Tree root){
@@ -125,6 +87,13 @@ public class TreeHelper {
                 break;
             }
         }
+        if(foundIndex == -1){
+            Logger.getRootLogger().info("**********************");
+            Logger.getRootLogger().info("INDEX NOT FOUND FOR :");
+            Logger.getRootLogger().info(nodeTextValue);
+            Logger.getRootLogger().info("**********************");
+            return null;
+        }
 
         if(!isNodeTextMultipleWords){
             return getParentForNode(leaves.get(foundIndex));
@@ -132,18 +101,26 @@ public class TreeHelper {
         else {
             ArrayList<Tree> leavesToSend = new ArrayList<Tree>();
             leavesToSend.add(0, leaves.get(foundIndex));
-
-            for (int i = 1; i < textArray.length ; i++) {
-                Tree leaf = leaves.get(foundIndex + i);
+            int arrayIndex = 1;
+            int tempIndex = 0;
+            for (Tree leaf : leaves) {
+                if(tempIndex != foundIndex){
+                    tempIndex++;
+                    //So that we can start comparison directly from found index
+                    continue;
+                }
+                if(arrayIndex == textArray.length){
+                    break;
+                }
                 String leafText = leaf.label().value();
                 if(!StringUtils.isAlphanumeric(leafText)){
                     continue;
                 }
-                if(StringUtils.stripNonAlphaNumerics(textArray[i]).equals(leafText)){
-                    leavesToSend.add(i, leaf);
+                if(StringUtils.stripNonAlphaNumerics(textArray[arrayIndex]).equals(leafText)){
+                    leavesToSend.add(arrayIndex, leaf);
+                    arrayIndex++;
                 }
             }
-            //return getParentForLeaves(leavesToSend, new HashSet<Tree>());
             return getCommonParentForLeaves(leavesToSend, node);
         }
     }
@@ -166,29 +143,57 @@ public class TreeHelper {
         }
     }
 
+    private String getTextValueForTree(Tree child, boolean skipCoRefTag) {
+        List<Word> words = child.yieldWords();
+        StringBuilder builder = new StringBuilder();
+        if(!skipCoRefTag){
+            //This is for finding valid CoRef ID. So anything would work as long as it has ID.
+            for (Word w : words) {
+                builder.append(w.value().trim());
+                builder.append(" ");
+            }
+            return builder.toString().trim();
+        }
+        else {
+            for (Word w : words) {
+                if(w.value().contains("COREF")){
+                    continue;
+                }
+                String word = StringUtils.stripNonAlphaNumerics(w.value());
+                builder.append(word);
+                if(word != null && word.length() > 0){
+                    builder.append(" ");
+                }
+            }
+            return builder.toString().trim();
+        }
+    }
 
-//    private Tree getParentForLeaves(ArrayList<Tree> leaves, HashSet<Tree> parentSet){
-//        if(parentSet.size() == 0){
-//            for (Tree leaf: leaves) {
-//                Tree parent = leaf.parent(sentenceRootNodeBeingTraversed);
-//                parentSet.add(parent);
-//            }
-//        }
-//
-//        if(parentSet.size() == 1){
-//            //Return the common parent
-//            for (Tree leafToReturn: parentSet) {
-//                return leafToReturn;
-//            }
-//        }
-//        else {
-//            ArrayList<Tree> children = new ArrayList<Tree>();
-//            children.addAll(parentSet);
-//            return getParentForLeaves(children, new HashSet<Tree>());
-//        }
-//        return null;
-//    }
+    private String getNodeValueToCompare(Node node, boolean shouldCompareID) {
+        StringBuilder sb = new StringBuilder();
+        if(shouldCompareID) {
+            sb.append(node.getAttributes().item(0).getNodeName());
+            sb.append("=");
+            sb.append("\"");
+            sb.append(node.getAttributes().item(0).getNodeValue());
+            sb.append("\"");
+        }
+        else {
+            String nodeTextValue = node.getTextContent();
+            String[] textArray = nodeTextValue.split("\\s|\\n");
+            for (int i = 0; i < textArray.length ; i++) {
+                sb.append(StringUtils.stripNonAlphaNumerics(textArray[i]));
+                sb.append(" ");
+            }
+        }
+        return sb.toString().trim();
+    }
 
+    private String cleanupSentence(String sentence) {
+        sentence = sentence.replaceAll("\\.", " ");
+        sentence = sentence.replaceAll("\\n", " ");
+        return sentence.trim();
+    }
     private Tree getParentForNode(Tree node){
         return node.parent(sentenceRootNodeBeingTraversed);
     }

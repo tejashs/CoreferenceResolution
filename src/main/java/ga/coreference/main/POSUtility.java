@@ -45,5 +45,12 @@ public class POSUtility {
         return nounRelatedTags.contains(tag);
     }
 
+    public static String stripCoRefTags(String text) {
+        return text.replaceAll("\\<[^\\>]+\\>", "");
+    }
 
+    public static boolean doesStringContainOnlySpecialCharacters(String stringText){
+        String splChrs = "-/@#$%^&_+=()" ;
+        return stringText.matches("[" + splChrs + "]+");
+    }
 }

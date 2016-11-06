@@ -46,15 +46,18 @@ public class CoreferenceResolution {
         TreeHelper treeHelper = TreeHelper.getInstance();
         for (int i = 0; i < coRefTagList.getLength(); i++) {
             Tree nodeinTree = null;
-            Node node = coRefTagList.item(i);
-            nodeinTree = treeHelper.getTreeForCoRefTag(node, listOfParseTrees);
-            getLogger().debug(node.getTextContent());
-            if(nodeinTree == null){
-                getLogger().debug("WTF WTF WTF");
-            }
-            else {
-                getLogger().debug(nodeinTree);
-            }
+            //if(i == 12){
+                Node node = coRefTagList.item(i);
+                nodeinTree = treeHelper.getTreeForCoRefTag(node, listOfParseTrees);
+                getLogger().debug(node.getTextContent());
+                if(nodeinTree == null){
+                    getLogger().debug("WTF WTF WTF");
+                }
+                else {
+                    getLogger().debug(nodeinTree);
+                }
+            //}
+
         }
     }
 
@@ -140,9 +143,7 @@ public class CoreferenceResolution {
         }
     }
 
-    private String stripCoRefTags(String text) {
-        return text.replaceAll("\\<[^\\>]+\\>", "");
-    }
+
 
     private String getOriginalSentenceForCoRefTag(String coRefTag, ArrayList<String> listOfSentences) {
         for (String sentence : listOfSentences) {
