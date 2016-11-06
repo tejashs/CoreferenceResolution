@@ -79,8 +79,12 @@ public class TreeHelper {
         }
 
         List<Tree> leaves = root.getLeaves();
+        int ballParkIndexToStart = getBallParkIndexToFindLeaf(node, root);
+        if(ballParkIndexToStart == -1){
+            ballParkIndexToStart = 0;
+        }
         int foundIndex = -1;
-        for (int i = 0; i < leaves.size(); i++) {
+        for (int i = ballParkIndexToStart; i < leaves.size(); i++) {
             Tree leaf = leaves.get(i);
             if(leaf.label().value().equals(StringUtils.stripNonAlphaNumerics(textToFind))){
                 foundIndex = i;
@@ -123,6 +127,20 @@ public class TreeHelper {
             }
             return getCommonParentForLeaves(leavesToSend, node);
         }
+    }
+
+    private int getBallParkIndexToFindLeaf(Node node, Tree root) {
+        List<Tree> leaves = root.getLeaves();
+        int indexToSend = -1;
+        String nodeValueToCompare = getNodeValueToCompare(node, true);
+        for(int i=0; i<leaves.size(); i++){
+            Tree leaf = leaves.get(i);
+            if(leaf.label().value().contains(nodeValueToCompare)){
+                indexToSend = i;
+                break;
+            }
+        }
+        return indexToSend;
     }
 
     private Tree getCommonParentForLeaves(ArrayList<Tree> leaves, Node node){
