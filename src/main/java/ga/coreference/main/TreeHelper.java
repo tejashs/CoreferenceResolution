@@ -1,6 +1,8 @@
 package ga.coreference.main;
 
 import edu.stanford.nlp.ling.Word;
+import edu.stanford.nlp.simple.Document;
+import edu.stanford.nlp.simple.Sentence;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.StringUtils;
 import org.apache.log4j.Logger;
@@ -8,6 +10,7 @@ import org.w3c.dom.Node;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 
 /**
@@ -207,6 +210,67 @@ public class TreeHelper {
             }
         }
         return sb.toString().trim();
+    }
+    
+    public List<Sentence> getSentenceForTree(Tree tree, boolean skipCoRefTag){
+    	List<Word> words = tree.yieldWords();
+        StringBuilder builder = new StringBuilder();
+        if(!skipCoRefTag){
+            for (Word w : words) {
+                builder.append(w.value().trim());
+                builder.append(" ");
+            }
+            Document doc = new Document(builder.toString().trim());
+            return doc.sentences();
+        }
+        else {
+            for (Word w : words) {
+                if(w.value().contains("COREF")){
+                    continue;
+                }
+                String word = w.value();
+                builder.append(word);
+                builder.append(" ");
+            }
+            Document doc = new Document(builder.toString().trim());
+            return doc.sentences();
+        }
+    }
+    
+    public String findNERTagForNP(Sentence sentence, Tree NP){
+    	List<String> NERtags = sentence.nerTags();
+    	List<String> words = sentence.words();
+    	List<Word> NPwords = NP.yieldWords();
+        StringBuilder builder = new StringBuilder();
+        for (Word w : NPwords) {
+            if(w.value().contains("COREF")){
+                continue;
+            }
+            String word = w.value();
+            builder.append(word);
+            builder.append(" ");
+        }
+        String NPText = builder.toString().trim();
+        String[] NPWords = NPText.split("\\s|\\n");
+    	
+    	Hashtable<String, Integer> NERTagsForNP = new Hashtable<String, Integer>();
+    	
+    	for(String NPWord: NPWords){
+    		int indexOfNPWord = words.indexOf(NPWord);
+    		String NERTagForNPWord = NERtags.get(indexOfNPWord);
+    		if(NERTagsForNP.containsKey(NERTagForNPWord)){
+    			return NERTagForNPWord;
+    			
+    		}
+    		else{
+    			NERTagsForNP.put(NERTagForNPWord, 1);
+    		}
+    	}
+    	
+    	String w = NPWords[NPWords.length-1];
+    	int idx = words.indexOf(w);
+    	String tag = NERtags.get(idx);
+    	return tag;	
     }
 
     private String cleanupSentence(String sentence) {
