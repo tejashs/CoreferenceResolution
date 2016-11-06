@@ -92,10 +92,10 @@ public class TreeHelper {
             }
         }
         if(foundIndex == -1){
-            Logger.getRootLogger().info("**********************");
-            Logger.getRootLogger().info("INDEX NOT FOUND FOR :");
-            Logger.getRootLogger().info(nodeTextValue);
-            Logger.getRootLogger().info("**********************");
+            getLogger().info("**********************");
+            getLogger().info("INDEX NOT FOUND FOR :");
+            getLogger().info(nodeTextValue);
+            getLogger().info("**********************");
             return null;
         }
 
@@ -214,5 +214,9 @@ public class TreeHelper {
     }
     private Tree getParentForNode(Tree node){
         return node.parent(sentenceRootNodeBeingTraversed);
+    }
+
+    private Logger getLogger(){
+        return Logger.getLogger(TreeHelper.class);
     }
 }

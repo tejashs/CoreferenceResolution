@@ -4,6 +4,7 @@ import edu.stanford.nlp.io.IOUtils;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.simple.Sentence;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations;
 import edu.stanford.nlp.util.CoreMap;
@@ -24,14 +25,12 @@ import java.util.List;
 import java.util.Properties;
 
 public class CoreferenceResolution {
-    private Logger logger;
     private ArrayList<String> originalSentences;
 
     public static void main(String[] args) {
 
         String fileName = "a8.crf";
         CoreferenceResolution resolver = new CoreferenceResolution();
-        resolver.logger = resolver.getLogger();
         BasicConfigurator.configure();
         resolver.startResolution(fileName);
     }
@@ -42,21 +41,19 @@ public class CoreferenceResolution {
         //Get All COREF Tags from file
         NodeList coRefTagList = getAllCoRefTagsInFile(f);
         ArrayList<Tree> listOfParseTrees = getParseTreesForFile(f);
-        logger.debug(coRefTagList);
         TreeHelper treeHelper = TreeHelper.getInstance();
         for (int i = 0; i < coRefTagList.getLength(); i++) {
             Tree nodeinTree = null;
-            //if(i == 12){
-                Node node = coRefTagList.item(i);
-                nodeinTree = treeHelper.getTreeForCoRefTag(node, listOfParseTrees);
-                getLogger().debug(node.getTextContent());
-                if(nodeinTree == null){
-                    getLogger().debug("WTF WTF WTF");
-                }
-                else {
-                    getLogger().debug(nodeinTree);
-                }
-            //}
+            Node node = coRefTagList.item(i);
+            nodeinTree = treeHelper.getTreeForCoRefTag(node, listOfParseTrees);
+            //######### DONT REMOVE UNTIL LAST
+//            getLogger().debug(node.getTextContent());
+//            if (nodeinTree == null) {
+//                getLogger().debug("WTF WTF WTF");
+//            } else {
+//                getLogger().debug(nodeinTree);
+//            }
+
 
         }
     }
@@ -74,7 +71,7 @@ public class CoreferenceResolution {
         originalSentences.addAll(Arrays.asList(sentencesInFile));
 
         List<CoreMap> sentences = getParsedSentences(fileText);
-        logger.debug("Sentences: " + sentences.size());
+        getLogger().debug("Parsed Sentences Count: " + sentences.size());
 
         int validSentenceCounter = 0;
         ArrayList<Tree> listOfTrees = new ArrayList<Tree>();
@@ -87,11 +84,11 @@ public class CoreferenceResolution {
             Tree tree = sentence.get(TreeCoreAnnotations.TreeAnnotation.class);
             listOfTrees.add(tree);
         }
-        logger.debug("Valid Sentences Count : " + validSentenceCounter);
+        getLogger().debug("Valid Sentences Count : " + validSentenceCounter);
         return listOfTrees;
     }
 
-    private List<CoreMap> getParsedSentences(String textToParse){
+    private List<CoreMap> getParsedSentences(String textToParse) {
         Properties props = new Properties();
         props.setProperty("annotators", "tokenize, ssplit, pos, lemma, ner, parse");
         StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
@@ -116,9 +113,8 @@ public class CoreferenceResolution {
         }
         NodeList listOfTags = null;
         if (document != null) {
-            logger.debug("Parsed");
             listOfTags = document.getElementsByTagName("COREF");
-            logger.debug(listOfTags.getLength());
+            getLogger().debug("Number of CoRef Tags : " + listOfTags.getLength());
         }
         return listOfTags;
     }
@@ -128,11 +124,11 @@ public class CoreferenceResolution {
         for (Tree child : children) {
             String label = child.label().value();
             if (label.equals("NP")) {
-                logger.debug("NP: " + child.toString());
+                getLogger().debug("NP: " + child.toString());
             }
             child.taggedYield();
             if (child.isLeaf()) {
-                logger.debug("LEAF: " + child);
+                getLogger().debug("LEAF: " + child);
             } else {
                 printTree(child);
             }
@@ -147,7 +143,8 @@ public class CoreferenceResolution {
         }
         return null;
     }
-    private Logger getLogger(){
+
+    private Logger getLogger() {
         return Logger.getLogger(CoreferenceResolution.class);
     }
 
