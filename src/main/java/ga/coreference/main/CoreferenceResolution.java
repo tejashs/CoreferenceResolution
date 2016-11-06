@@ -73,8 +73,6 @@ public class CoreferenceResolution {
         originalSentences = new ArrayList<String>();
         originalSentences.addAll(Arrays.asList(sentencesInFile));
 
-        //fileText = stripCoRefTags(fileText);
-
         List<CoreMap> sentences = getParsedSentences(fileText);
         logger.debug("Sentences: " + sentences.size());
 
@@ -88,8 +86,6 @@ public class CoreferenceResolution {
             // this is the parse tree of the current sentence
             Tree tree = sentence.get(TreeCoreAnnotations.TreeAnnotation.class);
             listOfTrees.add(tree);
-            //logger.debug(tree);
-            //printTree(tree);
         }
         logger.debug("Valid Sentences Count : " + validSentenceCounter);
         return listOfTrees;
@@ -142,8 +138,6 @@ public class CoreferenceResolution {
             }
         }
     }
-
-
 
     private String getOriginalSentenceForCoRefTag(String coRefTag, ArrayList<String> listOfSentences) {
         for (String sentence : listOfSentences) {

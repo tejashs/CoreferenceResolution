@@ -1,7 +1,5 @@
 package ga.coreference.main;
 
-import edu.stanford.nlp.util.StringUtils;
-
 import java.util.ArrayList;
 
 /**
