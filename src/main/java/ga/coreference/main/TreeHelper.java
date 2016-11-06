@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import org.w3c.dom.Node;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -25,7 +26,7 @@ public class TreeHelper {
         return INSTANCE;
     }
 
-    public Tree getTreeForCoRefTag(Node node, ArrayList<Tree> listOfTrees) {
+    public Tree getTreeForCoRefTag(Node node, ArrayList<Tree> listOfTrees, HashMap<Tree, Tree> coRefPhraseTreeToRootMap) {
         Tree treeToFind = null;
         sentenceRootNodeBeingTraversed = null;
         for (int i = 0; i < listOfTrees.size(); i++) {
@@ -35,6 +36,7 @@ public class TreeHelper {
             sentenceString = cleanupSentence(sentenceString);
             treeToFind = getTreeForNode(node, sentence);
             if (treeToFind != null) {
+                coRefPhraseTreeToRootMap.put(treeToFind, sentence);
                 break;
             }
             else {

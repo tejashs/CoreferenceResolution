@@ -19,13 +19,11 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 public class CoreferenceResolution {
     private ArrayList<String> originalSentences;
+    private HashMap<Tree, Tree> coRefPhraseTreeToRootMap;
 
     public static void main(String[] args) {
 
@@ -33,6 +31,10 @@ public class CoreferenceResolution {
         CoreferenceResolution resolver = new CoreferenceResolution();
         BasicConfigurator.configure();
         resolver.startResolution(fileName);
+    }
+
+    public CoreferenceResolution(){
+        coRefPhraseTreeToRootMap = new HashMap<Tree, Tree>();
     }
 
     public void startResolution(String fileName) {
@@ -45,7 +47,7 @@ public class CoreferenceResolution {
         for (int i = 0; i < coRefTagList.getLength(); i++) {
             Tree nodeinTree = null;
             Node node = coRefTagList.item(i);
-            nodeinTree = treeHelper.getTreeForCoRefTag(node, listOfParseTrees);
+            nodeinTree = treeHelper.getTreeForCoRefTag(node, listOfParseTrees, coRefPhraseTreeToRootMap);
             //######### DONT REMOVE UNTIL LAST
 //            getLogger().debug(node.getTextContent());
 //            if (nodeinTree == null) {
