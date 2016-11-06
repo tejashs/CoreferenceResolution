@@ -37,6 +37,7 @@ public class TreeHelper {
             treeToFind = getTreeForNode(node, sentence);
             if (treeToFind != null) {
                 coRefPhraseTreeToRootMap.put(treeToFind, sentence);
+                //TreeTraversalUtility.getCandidateAntecedantList(treeToFind, sentence);
                 break;
             }
             else {
@@ -88,7 +89,20 @@ public class TreeHelper {
         int foundIndex = -1;
         for (int i = ballParkIndexToStart; i < leaves.size(); i++) {
             Tree leaf = leaves.get(i);
-            if(leaf.label().value().equals(StringUtils.stripNonAlphaNumerics(textToFind))){
+            String[] leafValues = leaf.label().value().split("\\s");
+            String leafValueToCompare = null;
+            if(leafValues.length == 1){
+                leafValueToCompare = StringUtils.stripNonAlphaNumerics(leafValues[0]);
+            }
+            else {
+                StringBuilder builder = new StringBuilder();
+                for (int j = 0; j < leafValues.length ; j++) {
+                    builder.append(StringUtils.stripNonAlphaNumerics(leafValues[i]));
+                    builder.append(" ");
+                }
+                leafValueToCompare = builder.toString().trim();
+            }
+            if(leafValueToCompare.equals(StringUtils.stripNonAlphaNumerics(textToFind))){
                 foundIndex = i;
                 break;
             }
@@ -106,8 +120,8 @@ public class TreeHelper {
         }
         else {
             ArrayList<Tree> leavesToSend = new ArrayList<Tree>();
-            leavesToSend.add(0, leaves.get(foundIndex));
-            int arrayIndex = 1;
+            //leavesToSend.add(0, leaves.get(foundIndex));
+            int arrayIndex = 0;
             int tempIndex = 0;
             for (Tree leaf : leaves) {
                 if(tempIndex != foundIndex){
@@ -119,7 +133,8 @@ public class TreeHelper {
                     break;
                 }
                 String leafText = leaf.label().value();
-                if(!StringUtils.isAlphanumeric(leafText)){
+                leafText = StringUtils.stripNonAlphaNumerics(leafText);
+                if((leafText == null) || (leafText.length() == 0)){
                     continue;
                 }
                 if(StringUtils.stripNonAlphaNumerics(textArray[arrayIndex]).equals(leafText)){
@@ -154,6 +169,9 @@ public class TreeHelper {
 
     private Tree getParentForText(Tree parent, String textToCompare){
         String parentText = getTextValueForTree(parent, true);
+        if(parentText == null){
+            return null;
+        }
         if(parentText.contains(textToCompare)){
             return parent;
         }
@@ -164,6 +182,9 @@ public class TreeHelper {
     }
 
     private String getTextValueForTree(Tree child, boolean skipCoRefTag) {
+        if(child == null){
+            return null;
+        }
         List<Word> words = child.yieldWords();
         StringBuilder builder = new StringBuilder();
         if(!skipCoRefTag){

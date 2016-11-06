@@ -27,7 +27,7 @@ public class CoreferenceResolution {
 
     public static void main(String[] args) {
 
-        String fileName = "a8.crf";
+        String fileName = "a9.crf";
         CoreferenceResolution resolver = new CoreferenceResolution();
         BasicConfigurator.configure();
         resolver.startResolution(fileName);
@@ -47,14 +47,15 @@ public class CoreferenceResolution {
         for (int i = 0; i < coRefTagList.getLength(); i++) {
             Tree nodeinTree = null;
             Node node = coRefTagList.item(i);
+            //if(i == 12)
             nodeinTree = treeHelper.getTreeForCoRefTag(node, listOfParseTrees, coRefPhraseTreeToRootMap);
             //######### DONT REMOVE UNTIL LAST
-//            getLogger().debug(node.getTextContent());
-//            if (nodeinTree == null) {
-//                getLogger().debug("WTF WTF WTF");
-//            } else {
-//                getLogger().debug(nodeinTree);
-//            }
+            getLogger().debug(node.getTextContent());
+            if (nodeinTree == null) {
+                getLogger().debug("WTF WTF WTF");
+            } else {
+                getLogger().debug(nodeinTree);
+            }
 
 
         }
