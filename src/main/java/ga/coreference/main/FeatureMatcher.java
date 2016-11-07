@@ -75,9 +75,9 @@ public class FeatureMatcher {
     	return score;
     }*/
 	
-	public static boolean doesFeatureMatch(Tree markedNode, Tree candidateNode){
+	public static boolean doesFeatureMatch(Tree markedNode, CandidateNP candidateNode){
 		String markedNodeText = TreeHelper.getInstance().getTextValueForTree(markedNode, true);
-    	String candidateNodeText = TreeHelper.getInstance().getTextValueForTree(candidateNode, true);
+    	String candidateNodeText = TreeHelper.getInstance().getTextValueForTree(candidateNode.getNounPhrase(), true);
     	if(doesStringMatch(markedNodeText, candidateNodeText)){
     		return true;
     	}
