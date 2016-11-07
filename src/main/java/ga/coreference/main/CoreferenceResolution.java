@@ -4,7 +4,6 @@ import edu.stanford.nlp.io.IOUtils;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
-import edu.stanford.nlp.simple.Sentence;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations;
 import edu.stanford.nlp.util.CoreMap;
@@ -22,43 +21,93 @@ import java.io.IOException;
 import java.util.*;
 
 public class CoreferenceResolution {
-    private ArrayList<String> originalSentences;
-    private HashMap<Tree, Tree> coRefPhraseTreeToRootMap;
+    private ArrayList<Tree> sentenceParsedTrees;
+    private HashMap<Tree, Tree> coRefPhraseTreeToSentenceMap;
+    private HashMap<Tree, ArrayList<Tree>> sentenceToNPTerminalMap = new HashMap<Tree, ArrayList<Tree>>();
+    private HashMap<Tree, ArrayList<Tree>> coRefToCandidateNPMap = new HashMap<Tree, ArrayList<Tree>>();
 
     public static void main(String[] args) {
 
-        String fileName = "a9.crf";
+        String fileName = "b2.crf";
         CoreferenceResolution resolver = new CoreferenceResolution();
         BasicConfigurator.configure();
-        resolver.startResolution(fileName);
+        resolver.parseInputFiles(fileName);
     }
 
     public CoreferenceResolution(){
-        coRefPhraseTreeToRootMap = new HashMap<Tree, Tree>();
+        coRefPhraseTreeToSentenceMap = new HashMap<Tree, Tree>();
     }
 
-    public void startResolution(String fileName) {
+    public void parseInputFiles(String fileName) {
         ClassLoader classLoader = getClass().getClassLoader();
         File f = new File(classLoader.getResource(fileName).getFile());
         //Get All COREF Tags from file
         NodeList coRefTagList = getAllCoRefTagsInFile(f);
-        ArrayList<Tree> listOfParseTrees = getParseTreesForFile(f);
+        sentenceParsedTrees = getParseTreesForFile(f);
         TreeHelper treeHelper = TreeHelper.getInstance();
         for (int i = 0; i < coRefTagList.getLength(); i++) {
             Tree nodeinTree = null;
             Node node = coRefTagList.item(i);
             //if(i == 12)
-            nodeinTree = treeHelper.getTreeForCoRefTag(node, listOfParseTrees, coRefPhraseTreeToRootMap);
+            nodeinTree = treeHelper.getTreeForCoRefTag(node, sentenceParsedTrees, coRefPhraseTreeToSentenceMap);
             //######### DONT REMOVE UNTIL LAST
-            getLogger().debug(node.getTextContent());
-            if (nodeinTree == null) {
-                getLogger().debug("WTF WTF WTF");
-            } else {
-                getLogger().debug(nodeinTree);
-            }
-
-
+//            getLogger().debug(node.getTextContent());
+//            if (nodeinTree == null) {
+//                getLogger().debug("WTF WTF WTF");
+//            } else {
+//                getLogger().debug(nodeinTree);
+//            }
         }
+        startResolution();
+    }
+
+    private void startResolution(){
+        for (Tree sentenceNode: sentenceParsedTrees) {
+            ArrayList<Tree> terminalNPNodes = new ArrayList<Tree>();
+            TreeTraversalUtility.getTerminalNPNodes(sentenceNode, terminalNPNodes);
+            if(!sentenceToNPTerminalMap.containsKey(sentenceNode)){
+                sentenceToNPTerminalMap.put(sentenceNode, terminalNPNodes);
+            }
+        }
+
+        Set<Tree> coRefTagNodes = coRefPhraseTreeToSentenceMap.keySet();
+        for (Tree coRefNode: coRefTagNodes) {
+            Tree sentence = coRefPhraseTreeToSentenceMap.get(coRefNode);
+            ArrayList<Tree> npNodesList = sentenceToNPTerminalMap.get(sentence);
+            ArrayList<Tree> candidateNPsInSentence = getNpNodesUptilNode(coRefNode, npNodesList, sentence);
+//            getLogger().debug("#######");
+//            getLogger().debug("Sentence : " + sentence.toString());
+//            getLogger().debug("Printing NP Nodes uptil Node :" + coRefNode.toString());
+//            getLogger().debug("-----");
+            coRefToCandidateNPMap.put(coRefNode, candidateNPsInSentence);
+        }
+        evaluateCandidateNPsForCoRefs();
+
+
+    }
+
+    private void evaluateCandidateNPsForCoRefs(){
+        if(coRefPhraseTreeToSentenceMap.size() != coRefToCandidateNPMap.size()){
+            getLogger().debug("WTF IS WRONG");
+        }
+        Set<Tree> coRefs = coRefToCandidateNPMap.keySet();
+
+    }
+
+    private ArrayList<Tree> getNpNodesUptilNode(Tree node, ArrayList<Tree> npNpdesList, Tree rootNode){
+        ArrayList<Tree> listToReturn = new ArrayList<Tree>();
+        int nodeNumber = node.nodeNumber(rootNode);
+//        getLogger().debug("NODE NUMBER : " + nodeNumber);
+        for (int i = 0; i < npNpdesList.size(); i++) {
+            Tree n = npNpdesList.get(i);
+            int nNodeNumber = n.nodeNumber(rootNode);
+            if(nNodeNumber < nodeNumber){
+                listToReturn.add(n);
+//                getLogger().debug("N-Node Num: " + nNodeNumber);
+//                getLogger().debug(n.toString());
+            }
+        }
+        return listToReturn;
     }
 
     private ArrayList<Tree> getParseTreesForFile(File file) {
@@ -70,8 +119,6 @@ public class CoreferenceResolution {
         }
         fileText = fileText.replaceAll("\\n\\n", ".\n\n");
         String[] sentencesInFile = fileText.split("\\.");
-        originalSentences = new ArrayList<String>();
-        originalSentences.addAll(Arrays.asList(sentencesInFile));
 
         List<CoreMap> sentences = getParsedSentences(fileText);
         getLogger().debug("Parsed Sentences Count: " + sentences.size());
@@ -149,6 +196,26 @@ public class CoreferenceResolution {
 
     private Logger getLogger() {
         return Logger.getLogger(CoreferenceResolution.class);
+    }
+
+    private void print(Object obj){
+        if(obj == null){
+            return;
+        }
+        if(obj instanceof ArrayList){
+            ArrayList list = (ArrayList)obj;
+            for (int i = 0; i < list.size(); i++) {
+                Tree t = (Tree)list.get(i);
+                getLogger().debug(t.toString());
+            }
+        }
+        else if(obj instanceof Tree){
+            getLogger().debug(((Tree)obj).toString());
+        }
+        else {
+            getLogger().debug(obj.toString());
+        }
+
     }
 
 }
