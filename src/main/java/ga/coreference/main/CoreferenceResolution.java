@@ -131,7 +131,7 @@ public class CoreferenceResolution {
                 continue;
             }
             validSentenceCounter++;
-            getLogger().debug(sentence.toString());
+            //getLogger().debug(sentence.toString());
             // this is the parse tree of the current sentence
             Tree tree = sentence.get(TreeCoreAnnotations.TreeAnnotation.class);
             listOfTrees.add(tree);
