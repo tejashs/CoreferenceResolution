@@ -18,13 +18,15 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.*;
 
 public class CoreferenceResolution {
-    private ArrayList<Tree> sentenceParsedTrees;
-    private HashMap<Tree, Tree> coRefPhraseTreeToSentenceMap;
+    private ArrayList<Tree> coRefNodeTrees = new ArrayList<Tree>();
+    private ArrayList<Tree> sentenceParsedTrees = new ArrayList<Tree>();
+    private HashMap<Tree, Tree> coRefPhraseTreeToSentenceMap = new HashMap<Tree, Tree>();
     private HashMap<Tree, ArrayList<Tree>> sentenceToNPTerminalMap = new HashMap<Tree, ArrayList<Tree>>();
-    private HashMap<Tree, ArrayList<Tree>> coRefToCandidateNPMap = new HashMap<Tree, ArrayList<Tree>>();
+    private HashMap<Tree, ArrayList<CandidateNP>> coRefToCandidateNPMap = new HashMap<Tree, ArrayList<CandidateNP>>();
 
     public static void main(String[] args) {
 
@@ -50,6 +52,10 @@ public class CoreferenceResolution {
             Node node = coRefTagList.item(i);
             //if(i == 12)
             nodeinTree = treeHelper.getTreeForCoRefTag(node, sentenceParsedTrees, coRefPhraseTreeToSentenceMap);
+            if(nodeinTree != null){
+                coRefNodeTrees.add(nodeinTree);
+            }
+
             //######### DONT REMOVE UNTIL LAST
 //            getLogger().debug(node.getTextContent());
 //            if (nodeinTree == null) {
@@ -70,44 +76,54 @@ public class CoreferenceResolution {
             }
         }
 
-        Set<Tree> coRefTagNodes = coRefPhraseTreeToSentenceMap.keySet();
-        for (Tree coRefNode: coRefTagNodes) {
+        for (Tree coRefNode: coRefNodeTrees) {
             Tree sentence = coRefPhraseTreeToSentenceMap.get(coRefNode);
             ArrayList<Tree> npNodesList = sentenceToNPTerminalMap.get(sentence);
-            ArrayList<Tree> candidateNPsInSentence = getNpNodesUptilNode(coRefNode, npNodesList, sentence);
+            ArrayList<CandidateNP> candidateNPs = getNpNodesUptilNodeInSentence(coRefNode, npNodesList, sentence);
 //            getLogger().debug("#######");
+//            getLogger().debug(coRefNode.toString());
+//            getLogger().debug("Candidate Size of Sentence : " + candidateNPs.size());
 //            getLogger().debug("Sentence : " + sentence.toString());
 //            getLogger().debug("Printing NP Nodes uptil Node :" + coRefNode.toString());
 //            getLogger().debug("-----");
-            coRefToCandidateNPMap.put(coRefNode, candidateNPsInSentence);
+            getAllNPsFromPreviousSentencesInDecreasingOrder(sentence, candidateNPs);
+//            getLogger().debug("Candidate Size of All previous Sentences : " + candidateNPs.size());
+            coRefToCandidateNPMap.put(coRefNode, candidateNPs);
         }
-        evaluateCandidateNPsForCoRefs();
+
+        CandidateEvaluator evaluator = new CandidateEvaluator(sentenceParsedTrees, coRefPhraseTreeToSentenceMap, sentenceToNPTerminalMap, coRefToCandidateNPMap);
+        evaluator.evaluateCandidateNPsForCoRefs();
 
 
     }
 
-    private void evaluateCandidateNPsForCoRefs(){
-        if(coRefPhraseTreeToSentenceMap.size() != coRefToCandidateNPMap.size()){
-            getLogger().debug("WTF IS WRONG");
-        }
-        Set<Tree> coRefs = coRefToCandidateNPMap.keySet();
 
-    }
-
-    private ArrayList<Tree> getNpNodesUptilNode(Tree node, ArrayList<Tree> npNpdesList, Tree rootNode){
-        ArrayList<Tree> listToReturn = new ArrayList<Tree>();
-        int nodeNumber = node.nodeNumber(rootNode);
+    private ArrayList<CandidateNP> getNpNodesUptilNodeInSentence(Tree node, ArrayList<Tree> npNpdesList, Tree sentence){
+        ArrayList<CandidateNP> listToReturn = new ArrayList<CandidateNP>();
+        int nodeNumber = node.nodeNumber(sentence);
 //        getLogger().debug("NODE NUMBER : " + nodeNumber);
         for (int i = 0; i < npNpdesList.size(); i++) {
             Tree n = npNpdesList.get(i);
-            int nNodeNumber = n.nodeNumber(rootNode);
+            int nNodeNumber = n.nodeNumber(sentence);
             if(nNodeNumber < nodeNumber){
-                listToReturn.add(n);
+                listToReturn.add(new CandidateNP(n, sentence));
 //                getLogger().debug("N-Node Num: " + nNodeNumber);
 //                getLogger().debug(n.toString());
             }
         }
         return listToReturn;
+    }
+
+    private void getAllNPsFromPreviousSentencesInDecreasingOrder(Tree sentence, ArrayList<CandidateNP> candidateNPs){
+        int sentenceIndex = sentenceParsedTrees.indexOf(sentence);
+        for(int i=sentenceIndex-1; i>=0; i--){
+            Tree sentenceNode = sentenceParsedTrees.get(i);
+            ArrayList<Tree> terminalNPNodes = new ArrayList<Tree>();
+            TreeTraversalUtility.getTerminalNPNodes(sentenceNode, terminalNPNodes);
+            ArrayList<CandidateNP> candidates = CandidateNP.getCandidateNPFromTree(terminalNPNodes, sentenceNode);
+            candidateNPs.addAll(candidates);
+        }
+
     }
 
     private ArrayList<Tree> getParseTreesForFile(File file) {

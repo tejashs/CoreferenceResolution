@@ -8,10 +8,7 @@ import edu.stanford.nlp.util.StringUtils;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Node;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by tejas on 03/11/16.
@@ -29,7 +26,7 @@ public class TreeHelper {
         return INSTANCE;
     }
 
-    public Tree getTreeForCoRefTag(Node node, ArrayList<Tree> listOfTrees, HashMap<Tree, Tree> coRefPhraseTreeToRootMap) {
+    public Tree getTreeForCoRefTag(Node node, ArrayList<Tree> listOfTrees, Map<Tree, Tree> coRefPhraseTreeToRootMap) {
         Tree treeToFind = null;
         sentenceRootNodeBeingTraversed = null;
         for (int i = 0; i < listOfTrees.size(); i++) {

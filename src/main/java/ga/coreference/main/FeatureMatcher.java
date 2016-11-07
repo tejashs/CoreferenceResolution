@@ -7,7 +7,7 @@ import edu.stanford.nlp.trees.Tree;
  */
 public class FeatureMatcher {
 
-    public static boolean doesFeatureMatch(Tree markedNode, Tree candidateNode){
+    public static boolean doesFeatureMatch(Tree markedNode, CandidateNP candidateNode){
         return false;
     }
 }
