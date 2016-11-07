@@ -91,7 +91,8 @@ public class CoreferenceResolution {
             coRefToCandidateNPMap.put(coRefNode, candidateNPs);
         }
 
-        CandidateEvaluator evaluator = new CandidateEvaluator(sentenceParsedTrees, coRefPhraseTreeToSentenceMap, sentenceToNPTerminalMap, coRefToCandidateNPMap);
+        CandidateEvaluator evaluator = new CandidateEvaluator(coRefNodeTrees, sentenceParsedTrees, coRefPhraseTreeToSentenceMap,
+                sentenceToNPTerminalMap, coRefToCandidateNPMap);
         evaluator.evaluateCandidateNPsForCoRefs();
 
 
