@@ -27,22 +27,39 @@ public class CoreferenceResolution {
     private HashMap<Tree, Tree> coRefPhraseTreeToSentenceMap = new HashMap<Tree, Tree>();
     private HashMap<Tree, ArrayList<Tree>> sentenceToNPTerminalMap = new HashMap<Tree, ArrayList<Tree>>();
     private HashMap<Tree, ArrayList<CandidateNP>> coRefToCandidateNPMap = new HashMap<Tree, ArrayList<CandidateNP>>();
+    private HashMap<Tree, Node> corefTreetoCorefNode = new HashMap();
 
-    public static void main(String[] args) {
-
-        String fileName = "b2.crf";
-        CoreferenceResolution resolver = new CoreferenceResolution();
-        BasicConfigurator.configure();
-        resolver.parseInputFiles(fileName);
+    public static void main(String[] args) throws IOException {
+//    	if(args.length < 2){
+//    		System.out.println("arguments don't match");
+//    		return;
+//    	}
+    	File listOfFiles = new File("C:/Users/Manasa/Desktop/NLP/NLP Project/CoreferenceResolution/src/main/resources/listOfFiles.txt");
+    	//String responseDir = args[1];
+    	Scanner s = new Scanner(listOfFiles);
+    	while(s.hasNextLine()){
+    		String fileName = s.nextLine();
+    		CoreferenceResolution resolver = new CoreferenceResolution();
+            BasicConfigurator.configure();
+            resolver.parseInputFiles(fileName);
+            
+    	}
     }
 
     public CoreferenceResolution(){
         coRefPhraseTreeToSentenceMap = new HashMap<Tree, Tree>();
+        coRefNodeTrees = new ArrayList<Tree>();
+        sentenceParsedTrees = new ArrayList<Tree>();
+        sentenceToNPTerminalMap = new HashMap<Tree, ArrayList<Tree>>();
+        coRefToCandidateNPMap = new HashMap<Tree, ArrayList<CandidateNP>>();
+        corefTreetoCorefNode = new HashMap<Tree, Node>();
     }
 
-    public void parseInputFiles(String fileName) {
+    public void parseInputFiles(String fileName) throws IOException {
         ClassLoader classLoader = getClass().getClassLoader();
-        File f = new File(classLoader.getResource(fileName).getFile());
+       // File f = new File(classLoader.getResource(fileName).getFile());
+        //File f = new File("C:/Users/Manasa/Desktop/NLP/NLP Project/CoreferenceResolution/src/main/resources/a8.crf");
+        File f = new File(fileName);
         //Get All COREF Tags from file
         NodeList coRefTagList = getAllCoRefTagsInFile(f);
         sentenceParsedTrees = getParseTreesForFile(f);
@@ -54,6 +71,7 @@ public class CoreferenceResolution {
             nodeinTree = treeHelper.getTreeForCoRefTag(node, sentenceParsedTrees, coRefPhraseTreeToSentenceMap);
             if(nodeinTree != null){
                 coRefNodeTrees.add(nodeinTree);
+                corefTreetoCorefNode.put(nodeinTree,node);
             }
 
             //######### DONT REMOVE UNTIL LAST
@@ -64,10 +82,10 @@ public class CoreferenceResolution {
 //                getLogger().debug(nodeinTree);
 //            }
         }
-        startResolution();
+        startResolution(fileName);
     }
 
-    private void startResolution(){
+    private void startResolution(String fileName) throws IOException{
         for (Tree sentenceNode: sentenceParsedTrees) {
             ArrayList<Tree> terminalNPNodes = new ArrayList<Tree>();
             TreeTraversalUtility.getTerminalNPNodes(sentenceNode, terminalNPNodes);
@@ -92,7 +110,7 @@ public class CoreferenceResolution {
         }
 
         CandidateEvaluator evaluator = new CandidateEvaluator(coRefNodeTrees, sentenceParsedTrees, coRefPhraseTreeToSentenceMap,
-                sentenceToNPTerminalMap, coRefToCandidateNPMap);
+                sentenceToNPTerminalMap, coRefToCandidateNPMap, corefTreetoCorefNode, fileName);
         evaluator.evaluateCandidateNPsForCoRefs();
 
 

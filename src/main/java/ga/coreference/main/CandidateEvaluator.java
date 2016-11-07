@@ -2,7 +2,11 @@ package ga.coreference.main;
 
 import edu.stanford.nlp.trees.Tree;
 import org.apache.log4j.Logger;
+import org.w3c.dom.Node;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
@@ -17,19 +21,22 @@ public class CandidateEvaluator {
     private HashMap<Tree, ArrayList<Tree>> sentenceToNPTerminalMap = new HashMap<Tree, ArrayList<Tree>>();
     private HashMap<Tree, ArrayList<CandidateNP>> coRefToCandidateNPMap = new HashMap<Tree, ArrayList<CandidateNP>>();
     private HashMap<Tree, ArrayList<CandidateNP>> coRefToSuccessCandidateMap = new HashMap<Tree, ArrayList<CandidateNP>>();
-
+    private HashMap<Tree, Node> corefTreetoCorefNode = new HashMap<Tree, Node>();
+    private String fileName;
     public CandidateEvaluator(ArrayList<Tree> coRefNodes, ArrayList<Tree> sentenceParsedTrees, HashMap<Tree, Tree> coRefPhraseTreeToSentenceMap,
                               HashMap<Tree, ArrayList<Tree>> sentenceToNPTerminalMap,
-                              HashMap<Tree, ArrayList<CandidateNP>> coRefToCandidateNPMap) {
+                              HashMap<Tree, ArrayList<CandidateNP>> coRefToCandidateNPMap, HashMap<Tree, Node> corefTreetoCorefNode, String fileName) {
         this.coRefNodes = coRefNodes;
         this.sentenceParsedTrees = sentenceParsedTrees;
         this.coRefPhraseTreeToSentenceMap = coRefPhraseTreeToSentenceMap;
         this.sentenceToNPTerminalMap = sentenceToNPTerminalMap;
         this.coRefToCandidateNPMap = coRefToCandidateNPMap;
+        this.corefTreetoCorefNode = corefTreetoCorefNode;
+        this.fileName = fileName;
     }
 
 
-    public void evaluateCandidateNPsForCoRefs(){
+    public void evaluateCandidateNPsForCoRefs() throws IOException{
         if(coRefPhraseTreeToSentenceMap.size() != coRefToCandidateNPMap.size()){
             getLogger().debug("WTF IS WRONG");
         }
@@ -67,19 +74,63 @@ public class CandidateEvaluator {
 
         }
 
-        getLogger().debug("###############");
-        getLogger().debug("OUTPUT");
-        getLogger().debug("Total CORefTags:" + coRefNodes.size());
-        getLogger().debug("Total CORef To Success Map Size:" + coRefToSuccessCandidateMap.size());
-        for (Tree coRef:coRefToSuccessCandidateMap.keySet()) {
-            getLogger().info("-------------");
-            getLogger().info("COREFERENCE ANAPHORA : " + coRef.toString());
-            for (CandidateNP cNP: coRefToSuccessCandidateMap.get(coRef)) {
-                getLogger().info(cNP.getNounPhrase());
-            }
-            getLogger().info("-------------");
-        }
+//        getLogger().debug("###############");
+//        getLogger().debug("OUTPUT");
+//        getLogger().debug("Total CORefTags:" + coRefNodes.size());
+//        getLogger().debug("Total CORef To Success Map Size:" + coRefToSuccessCandidateMap.size());
+//        for (Tree coRef:coRefToSuccessCandidateMap.keySet()) {
+//            getLogger().info("-------------");
+//            getLogger().info("COREFERENCE ANAPHORA : " + coRef.toString());
+//            for (CandidateNP cNP: coRefToSuccessCandidateMap.get(coRef)) {
+//                getLogger().info(cNP.getNounPhrase());
+//            }
+//            getLogger().info("-------------");
+//        }
+     
+       printOutput();
+       
 
+    }
+    
+    public void printOutput() throws IOException{
+    	 PrintWriter out = new PrintWriter(new FileWriter(fileName+".response"));
+    	 out.println("<TXT>");
+    	
+         int j = 1;
+         
+         for (Tree coRef:coRefToSuccessCandidateMap.keySet()) {
+        	 Node cn = corefTreetoCorefNode.get(coRef);
+        	 String ref = "";
+             ArrayList<CandidateNP> cand = coRefToSuccessCandidateMap.get(coRef);
+             for(int i = cand.size()-1; i >= 0; i--){
+             	//check if its a coref
+             	Tree cNP = cand.get(i).getNounPhrase();
+             	if(coRefPhraseTreeToSentenceMap.containsKey(cNP)){
+             		if(coRefToSuccessCandidateMap.containsKey(cNP)){
+             			continue;
+             		}
+             		Node n = corefTreetoCorefNode.get(cNP);
+             		if(n.getAttributes().getLength() == 1){
+             			
+             			out.println("<COREF ID=\""+n.getAttributes().item(0).getNodeValue()+"\">"+n.getTextContent()+"</COREF>");
+             			if(i == cand.size()-1) ref = n.getAttributes().item(0).getNodeValue();
+             		}
+             		else{
+             			out.println("<COREF ID=\""+n.getAttributes().item(0).getNodeValue()+"\" REF=\""+n.getAttributes().item(1).getNodeValue()+"\">"+n.getTextContent()+"</COREF>");
+             			if(i == cand.size()-1) ref = n.getAttributes().item(1).getNodeValue();
+             		}
+             		
+             	}
+             	else{
+             		out.println("<COREF ID=\"GA"+j+"\">"+TreeHelper.getInstance().getTextValueForTree(cNP, true)+"</COREF>");
+             		if(i == cand.size()-1) ref = "GA"+j;
+             		j++;
+             	}
+             }
+             out.println("<COREF ID=\""+cn.getAttributes().item(0).getNodeValue()+"\" REF=\""+ref+"\">"+cn.getTextContent()+"</COREF>");
+         }
+         out.println("</TXT>");
+         out.close();
     }
 
     private Logger getLogger() {
