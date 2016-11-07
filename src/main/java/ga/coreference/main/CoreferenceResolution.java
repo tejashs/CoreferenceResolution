@@ -118,6 +118,7 @@ public class CoreferenceResolution {
             e.printStackTrace();
         }
         fileText = fileText.replaceAll("\\n\\n", ".\n\n");
+        fileText = fileText.replaceAll("\\n-", ".\n\n");
         String[] sentencesInFile = fileText.split("\\.");
 
         List<CoreMap> sentences = getParsedSentences(fileText);
@@ -130,6 +131,7 @@ public class CoreferenceResolution {
                 continue;
             }
             validSentenceCounter++;
+            getLogger().debug(sentence.toString());
             // this is the parse tree of the current sentence
             Tree tree = sentence.get(TreeCoreAnnotations.TreeAnnotation.class);
             listOfTrees.add(tree);

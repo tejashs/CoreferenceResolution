@@ -1,6 +1,9 @@
 package ga.coreference.main;
 
+import java.util.List;
 import java.util.ArrayList;
+
+import edu.stanford.nlp.trees.Tree;
 
 /**
  * Created by tejas on 03/11/16.
@@ -8,6 +11,8 @@ import java.util.ArrayList;
 public class POSUtility {
     private static ArrayList<String> phrases;
     private static ArrayList<String> nounRelatedTags;
+    private static ArrayList<String> nounSingular;
+    private static ArrayList<String> nounPlural;
     static{
         phrases = new ArrayList<String>();
         //CLAUSES as Per PENN TREEBANK
@@ -48,6 +53,16 @@ public class POSUtility {
         nounRelatedTags.add("NNP");
         nounRelatedTags.add("NNPS");
         nounRelatedTags.add("WHNP");
+        
+        nounSingular = new ArrayList<String>();
+        nounSingular.add("NN");
+        nounSingular.add("NNP");
+        
+        nounPlural = new ArrayList<String>();
+        nounPlural.add("NNS");
+        nounPlural.add("NNPS");
+       
+        
     }
 
     public static boolean isTerminalTag(String tag){
@@ -70,5 +85,24 @@ public class POSUtility {
     public static boolean doesStringContainOnlySpecialCharacters(String stringText){
         String splChrs = "-/@#$%^&_+=()" ;
         return stringText.matches("[" + splChrs + "]+");
+    }
+    
+    public static boolean isSingular(Tree root, Tree tree){
+    	List<Tree> leaves = tree.getLeaves();
+    	boolean singular = false;
+    	for(Tree leaf: leaves){
+    		if(!leaf.label().value().contains("COREF")){	
+    			if(checkIfTagIsNounRelated(leaf.parent(root).label().toString())){
+    				if(nounSingular.contains(leaf.parent(root).label().toString())){
+    					singular = true;
+    				}
+    				else if(nounPlural.contains(leaf.parent(root).label().toString())){
+    					singular = false;
+    				}
+    			}
+    		}
+    		
+    	}
+    		return singular;
     }
 }
