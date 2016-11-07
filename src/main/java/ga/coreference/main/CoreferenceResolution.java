@@ -27,7 +27,7 @@ public class CoreferenceResolution {
 
     public static void main(String[] args) {
 
-        String fileName = "a9.crf";
+        String fileName = "a8.crf";
         CoreferenceResolution resolver = new CoreferenceResolution();
         BasicConfigurator.configure();
         resolver.startResolution(fileName);
@@ -40,6 +40,7 @@ public class CoreferenceResolution {
     public void startResolution(String fileName) {
         ClassLoader classLoader = getClass().getClassLoader();
         File f = new File(classLoader.getResource(fileName).getFile());
+        //File f = new File("C:/Users/Manasa/Desktop/NLP/NLP Project/CoreferenceResolution/src/main/resources/b10.crf");
         //Get All COREF Tags from file
         NodeList coRefTagList = getAllCoRefTagsInFile(f);
         ArrayList<Tree> listOfParseTrees = getParseTreesForFile(f);
@@ -47,17 +48,17 @@ public class CoreferenceResolution {
         for (int i = 0; i < coRefTagList.getLength(); i++) {
             Tree nodeinTree = null;
             Node node = coRefTagList.item(i);
-            //if(i == 12)
+           // if(i == 2){
             nodeinTree = treeHelper.getTreeForCoRefTag(node, listOfParseTrees, coRefPhraseTreeToRootMap);
             //######### DONT REMOVE UNTIL LAST
             getLogger().debug(node.getTextContent());
+            //getLogger().debug(coRefPhraseTreeToRootMap.get(nodeinTree).label().value().toString());
             if (nodeinTree == null) {
                 getLogger().debug("WTF WTF WTF");
             } else {
                 getLogger().debug(nodeinTree);
             }
-
-
+           
         }
     }
 
@@ -69,6 +70,7 @@ public class CoreferenceResolution {
             e.printStackTrace();
         }
         fileText = fileText.replaceAll("\\n\\n", ".\n\n");
+        fileText = fileText.replaceAll("\\n-", ".\n\n");
         String[] sentencesInFile = fileText.split("\\.");
         originalSentences = new ArrayList<String>();
         originalSentences.addAll(Arrays.asList(sentencesInFile));
@@ -83,6 +85,7 @@ public class CoreferenceResolution {
                 continue;
             }
             validSentenceCounter++;
+            getLogger().debug(sentence.toString());
             // this is the parse tree of the current sentence
             Tree tree = sentence.get(TreeCoreAnnotations.TreeAnnotation.class);
             listOfTrees.add(tree);
