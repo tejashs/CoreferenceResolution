@@ -1,7 +1,5 @@
 package ga.coreference.main;
 
-import java.util.DoubleSummaryStatistics;
-
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.StringUtils;
 
@@ -78,6 +76,9 @@ public class FeatureMatcher {
 	public static boolean doesFeatureMatch(Tree markedNode, CandidateNP candidateNode){
 		String markedNodeText = TreeHelper.getInstance().getTextValueForTree(markedNode, true);
     	String candidateNodeText = TreeHelper.getInstance().getTextValueForTree(candidateNode.getNounPhrase(), true);
+        if(candidateNodeText.contains("COREF")){
+            return false;
+        }
     	if(doesStringMatch(markedNodeText, candidateNodeText)){
     		return true;
     	}

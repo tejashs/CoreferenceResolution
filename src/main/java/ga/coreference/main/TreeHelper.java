@@ -181,7 +181,7 @@ public class TreeHelper {
         }
     }
 
-    private String getTextValueForTree(Tree child, boolean skipCoRefTag) {
+    public String getTextValueForTree(Tree child, boolean skipCoRefTag) {
         if(child == null){
             return null;
         }

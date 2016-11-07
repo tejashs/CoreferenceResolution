@@ -40,8 +40,12 @@ public class CandidateEvaluator {
             for (CandidateNP candidateNP:  candidateNPs) {
                 boolean featureMatched = FeatureMatcher.doesFeatureMatch(coRef, candidateNP);
                 if(featureMatched){
+                    if(TreeHelper.getInstance().getTextValueForTree(candidateNP.getNounPhrase(), true).length() == 0){
+                        continue;
+                    }
                     if(coRefToSuccessCandidateMap.containsKey(coRef)){
                         ArrayList<CandidateNP> successCandidates = coRefToSuccessCandidateMap.get(coRef);
+
                         successCandidates.add(candidateNP);
                         coRefToSuccessCandidateMap.put(coRef, successCandidates);
                     }
@@ -69,7 +73,7 @@ public class CandidateEvaluator {
         getLogger().debug("Total CORef To Success Map Size:" + coRefToSuccessCandidateMap.size());
         for (Tree coRef:coRefToSuccessCandidateMap.keySet()) {
             getLogger().info("-------------");
-            getLogger().info(coRef.toString());
+            getLogger().info("COREFERENCE ANAPHORA : " + coRef.toString());
             for (CandidateNP cNP: coRefToSuccessCandidateMap.get(coRef)) {
                 getLogger().info(cNP.getNounPhrase());
             }
