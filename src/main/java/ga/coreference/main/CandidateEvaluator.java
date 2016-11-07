@@ -11,13 +11,17 @@ import java.util.Set;
  * Created by tejas on 06/11/16.
  */
 public class CandidateEvaluator {
+    private ArrayList<Tree> coRefNodes;
     private ArrayList<Tree> sentenceParsedTrees;
     private HashMap<Tree, Tree> coRefPhraseTreeToSentenceMap;
     private HashMap<Tree, ArrayList<Tree>> sentenceToNPTerminalMap = new HashMap<Tree, ArrayList<Tree>>();
     private HashMap<Tree, ArrayList<CandidateNP>> coRefToCandidateNPMap = new HashMap<Tree, ArrayList<CandidateNP>>();
     private HashMap<Tree, ArrayList<CandidateNP>> coRefToSuccessCandidateMap = new HashMap<Tree, ArrayList<CandidateNP>>();
 
-    public CandidateEvaluator(ArrayList<Tree> sentenceParsedTrees, HashMap<Tree, Tree> coRefPhraseTreeToSentenceMap, HashMap<Tree, ArrayList<Tree>> sentenceToNPTerminalMap, HashMap<Tree, ArrayList<CandidateNP>> coRefToCandidateNPMap) {
+    public CandidateEvaluator(ArrayList<Tree> coRefNodes, ArrayList<Tree> sentenceParsedTrees, HashMap<Tree, Tree> coRefPhraseTreeToSentenceMap,
+                              HashMap<Tree, ArrayList<Tree>> sentenceToNPTerminalMap,
+                              HashMap<Tree, ArrayList<CandidateNP>> coRefToCandidateNPMap) {
+        this.coRefNodes = coRefNodes;
         this.sentenceParsedTrees = sentenceParsedTrees;
         this.coRefPhraseTreeToSentenceMap = coRefPhraseTreeToSentenceMap;
         this.sentenceToNPTerminalMap = sentenceToNPTerminalMap;
@@ -30,8 +34,7 @@ public class CandidateEvaluator {
             getLogger().debug("WTF IS WRONG");
         }
 
-        Set<Tree> coRefs = coRefToCandidateNPMap.keySet();
-        for (Tree coRef: coRefs) {
+        for (Tree coRef: coRefNodes) {
             ArrayList<CandidateNP> candidateNPs = coRefToCandidateNPMap.get(coRef);
             //First Check in candidateNPs which are candidates from the same sentence.
             for (CandidateNP candidateNP:  candidateNPs) {
@@ -47,7 +50,6 @@ public class CandidateEvaluator {
                         successCandidates.add(candidateNP);
                         coRefToSuccessCandidateMap.put(coRef, successCandidates);
                     }
-
                 }
             }
 
@@ -61,8 +63,18 @@ public class CandidateEvaluator {
 
         }
 
-
-
+        getLogger().debug("###############");
+        getLogger().debug("OUTPUT");
+        getLogger().debug("Total CORefTags:" + coRefNodes.size());
+        getLogger().debug("Total CORef To Success Map Size:" + coRefToSuccessCandidateMap.size());
+        for (Tree coRef:coRefToSuccessCandidateMap.keySet()) {
+            getLogger().info("-------------");
+            getLogger().info(coRef.toString());
+            for (CandidateNP cNP: coRefToSuccessCandidateMap.get(coRef)) {
+                getLogger().info(cNP.getNounPhrase());
+            }
+            getLogger().info("-------------");
+        }
 
     }
 
