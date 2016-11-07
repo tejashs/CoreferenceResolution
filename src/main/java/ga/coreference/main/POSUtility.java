@@ -87,16 +87,16 @@ public class POSUtility {
         return stringText.matches("[" + splChrs + "]+");
     }
     
-    public static boolean isSingular(Tree root, Tree tree){
+    public static boolean isSingular(Tree sentence, Tree tree){
     	List<Tree> leaves = tree.getLeaves();
     	boolean singular = false;
     	for(Tree leaf: leaves){
     		if(!leaf.label().value().contains("COREF")){	
-    			if(checkIfTagIsNounRelated(leaf.parent(root).label().toString())){
-    				if(nounSingular.contains(leaf.parent(root).label().toString())){
+    			if(checkIfTagIsNounRelated(leaf.parent(sentence).label().toString())){
+    				if(nounSingular.contains(leaf.parent(sentence).label().toString())){
     					singular = true;
     				}
-    				else if(nounPlural.contains(leaf.parent(root).label().toString())){
+    				else if(nounPlural.contains(leaf.parent(sentence).label().toString())){
     					singular = false;
     				}
     			}

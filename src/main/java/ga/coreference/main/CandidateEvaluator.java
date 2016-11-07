@@ -45,7 +45,7 @@ public class CandidateEvaluator {
             ArrayList<CandidateNP> candidateNPs = coRefToCandidateNPMap.get(coRef);
             //First Check in candidateNPs which are candidates from the same sentence.
             for (CandidateNP candidateNP:  candidateNPs) {
-                boolean featureMatched = FeatureMatcher.doesFeatureMatch(coRef, candidateNP);
+                boolean featureMatched = FeatureMatcher.doesFeatureMatch(coRef, coRefPhraseTreeToSentenceMap.get(coRef), candidateNP, candidateNP.getSentenceRoot());
                 if(featureMatched){
                     if(TreeHelper.getInstance().getTextValueForTree(candidateNP.getNounPhrase(), true).length() == 0){
                         continue;
