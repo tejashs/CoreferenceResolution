@@ -64,8 +64,8 @@ public class CoreferenceResolution {
 
     public String parseInputFile(String fileName) throws IOException {
         ClassLoader classLoader = getClass().getClassLoader();
-        File f = new File(classLoader.getResource(fileName).getFile());
-       // File f = new File(fileName);
+//        File f = new File(classLoader.getResource(fileName).getFile());
+        File f = new File(fileName);
         //Get All COREF Tags from file
         NodeList coRefTagList = getAllCoRefTagsInFile(f);
         sentenceParsedTrees = getParseTreesForFile(f);

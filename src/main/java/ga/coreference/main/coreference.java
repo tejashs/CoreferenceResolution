@@ -30,10 +30,15 @@ public class coreference {
             CoreferenceResolution resolver = new CoreferenceResolution();
             BasicConfigurator.configure();
             String output = resolver.parseInputFile(fileName);
-            String[] filenamePrefix = fileName.split(".");
+            String[] filenameArray = fileName.split("\\.");
+            String fullFilePath = filenameArray[0];
+            String[] temp = fullFilePath.split(File.separator);
+            String filenamePrefix = temp[temp.length - 1];
             String fileToPrint = directoryForResponseFiles + File.separator + filenamePrefix + "." + "response";
             PrintWriter out = new PrintWriter(new FileWriter(fileToPrint));
             out.print(output);
+            out.flush();
+            out.close();
         }
     }
 }
