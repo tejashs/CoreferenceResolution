@@ -1,11 +1,16 @@
 package ga.coreference.main;
 
 import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collections;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -20,6 +25,7 @@ public class coreference {
             System.out.println("coreference <listFile> <responseDir>");
             return;
         }
+        setLoggerOff();
         String pathForListOfFiles = args[0];
         String directoryForResponseFiles = args[1];
 
@@ -40,5 +46,13 @@ public class coreference {
             out.flush();
             out.close();
         }
+
+
+    }
+
+    private static void setLoggerOff(){
+        List<Logger> loggers = Collections.<Logger>list(LogManager.getCurrentLoggers());
+        loggers.add(LogManager.getRootLogger());
+        for ( Logger logger : loggers ) logger.setLevel(Level.OFF);
     }
 }
