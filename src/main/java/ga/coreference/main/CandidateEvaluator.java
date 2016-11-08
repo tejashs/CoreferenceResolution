@@ -36,7 +36,7 @@ public class CandidateEvaluator {
     }
 
 
-    public void evaluateCandidateNPsForCoRefs() throws IOException{
+    public String evaluateCandidateNPsForCoRefs() throws IOException{
         if(coRefPhraseTreeToSentenceMap.size() != coRefToCandidateNPMap.size()){
             getLogger().debug("WTF IS WRONG");
         }
@@ -87,7 +87,7 @@ public class CandidateEvaluator {
 //            getLogger().info("-------------");
 //        }
      
-       printOutput();
+       return getOutputToPrint();
        
 
     }
@@ -133,9 +133,12 @@ public class CandidateEvaluator {
 //         out.close();
 //    }
 
-    public void printOutput() throws IOException{
-        PrintWriter out = new PrintWriter(new FileWriter(fileName+".response"));
-        out.println("<TXT>");
+    public String getOutputToPrint() throws IOException{
+        StringBuilder builder = new StringBuilder();
+        builder.append("<TXT>");
+        builder.append("\n");
+//        PrintWriter out = new PrintWriter(new FileWriter(fileName+".response"));
+//        out.println("<TXT>");
 
         int xmlTagIDCounter = 1;
 
@@ -158,7 +161,9 @@ public class CandidateEvaluator {
                     xmlTagIDCounter++;
                     if(i == candidateNPList.size()-1){
                         ref = ID;
-                        out.println(constructXMLNode(ID, null, cNP));
+                        builder.append(constructXMLNode(ID, null, cNP));
+                        builder.append("\n");
+                        //out.println(constructXMLNode(ID, null, cNP));
                     }
                     //else {
                       //  xmlNodeTextToPrint = constructXMLNode(ID, ref, cNP);
@@ -167,10 +172,15 @@ public class CandidateEvaluator {
                 }
             }
             String x = constructXMLNode(coRefXMLNode.getAttributes().item(0).getNodeValue(), ref, coRefXMLNode.getTextContent());
-            out.println(x);
+            builder.append(x);
+            builder.append("\n");
+            //out.println(x);
         }
-        out.println("</TXT>");
-        out.close();
+        builder.append("</TXT>");
+        builder.append("\n");
+        //out.println("</TXT>");
+        //out.close();
+        return builder.toString();
     }
 
     private String constructXMLNode(String IDtoAdd, String referenceTag, Tree tree){
