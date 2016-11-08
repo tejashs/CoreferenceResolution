@@ -180,10 +180,10 @@ public class CandidateEvaluator {
     private String constructXMLNode(String IDtoAdd, String referenceTag, String textContent){
         String xmlTextToSend = null;
         if(referenceTag == null){
-            xmlTextToSend =  "<COREF ID="+ IDtoAdd + "\">"+textContent+"</COREF>";
+            xmlTextToSend =  "<COREF ID=\""+ IDtoAdd + "\">"+textContent+"</COREF>";
         }
         else {
-            xmlTextToSend =  "<COREF ID="+ IDtoAdd + "\" REF=\""+ referenceTag + "\">"+textContent+"</COREF>";
+            xmlTextToSend =  "<COREF ID=\""+ IDtoAdd + "\" REF=\""+ referenceTag + "\">"+textContent+"</COREF>";
         }
         return xmlTextToSend;
     }
