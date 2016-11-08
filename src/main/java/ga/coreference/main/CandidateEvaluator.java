@@ -154,12 +154,17 @@ public class CandidateEvaluator {
                 if(coRefToSuccessCandidateMap.containsKey(cNP)){
                     //TODO
                     Node xmlNode = corefTreetoCorefNode.get(cNP);
+                    
+                    if(coRefXMLNode.getAttributes().item(0).getNodeValue().equals(xmlNode.getAttributes().item(0).getNodeValue())){
+                    	continue;
+                    }
                     ref  = xmlNode.getAttributes().item(0).getNodeValue();
+                    
                 }
                 else {
                     String ID = "GA" + xmlTagIDCounter;
                     xmlTagIDCounter++;
-                    if(i == candidateNPList.size()-1){
+                    if(ref == null){
                         ref = ID;
                         builder.append(constructXMLNode(ID, null, cNP));
                         builder.append("\n");
@@ -171,9 +176,11 @@ public class CandidateEvaluator {
 
                 }
             }
+           //if(!coRefXMLNode.getAttributes().item(0).getNodeValue().equals(ref)){
             String x = constructXMLNode(coRefXMLNode.getAttributes().item(0).getNodeValue(), ref, coRefXMLNode.getTextContent());
             builder.append(x);
             builder.append("\n");
+           //}
             //out.println(x);
         }
         builder.append("</TXT>");
