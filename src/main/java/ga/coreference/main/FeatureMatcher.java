@@ -39,10 +39,10 @@ public class FeatureMatcher {
 
 
     	//NER match
-    	NERMatch = doesNERMatch(markedNode, sentenceForMarkedNode, candidateNode);
+    	//NERMatch = doesNERMatch(markedNode, sentenceForMarkedNode, candidateNode);
     	
     	//Number agreement
-        numberMatch = doesNumberMatch(markedNode, sentenceForMarkedNode, candidateNode);
+        //numberMatch = doesNumberMatch(markedNode, sentenceForMarkedNode, candidateNode);
 
         //Gender match
 

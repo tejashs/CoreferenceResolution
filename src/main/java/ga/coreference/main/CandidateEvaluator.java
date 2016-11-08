@@ -92,46 +92,102 @@ public class CandidateEvaluator {
 
     }
     
+//    public void printOutput() throws IOException{
+//    	 PrintWriter out = new PrintWriter(new FileWriter(fileName+".response"));
+//    	 out.println("<TXT>");
+//
+//         int j = 1;
+//
+//         for (Tree coRef:coRefToSuccessCandidateMap.keySet()) {
+//        	 Node cn = corefTreetoCorefNode.get(coRef);
+//        	 String ref = "";
+//             ArrayList<CandidateNP> cand = coRefToSuccessCandidateMap.get(coRef);
+//             for(int i = cand.size()-1; i >= 0; i--){
+//             	//check if its a coref
+//             	Tree cNP = cand.get(i).getNounPhrase();
+//             	if(coRefPhraseTreeToSentenceMap.containsKey(cNP)){
+//             		if(coRefToSuccessCandidateMap.containsKey(cNP)){
+//             			continue;
+//             		}
+//             		Node n = corefTreetoCorefNode.get(cNP);
+//             		if(n.getAttributes().getLength() == 1){
+//
+//             			out.println("<COREF ID=\""+n.getAttributes().item(0).getNodeValue()+"\">"+n.getTextContent()+"</COREF>");
+//             			if(i == cand.size()-1) ref = n.getAttributes().item(0).getNodeValue();
+//             		}
+//             		else{
+//             			out.println("<COREF ID=\""+n.getAttributes().item(0).getNodeValue()+"\" REF=\""+n.getAttributes().item(1).getNodeValue()+"\">"+n.getTextContent()+"</COREF>");
+//             			if(i == cand.size()-1) ref = n.getAttributes().item(1).getNodeValue();
+//             		}
+//
+//             	}
+//             	else{
+//             		out.println("<COREF ID=\"GA"+j+"\">"+TreeHelper.getInstance().getTextValueForTree(cNP, true)+"</COREF>");
+//             		if(i == cand.size()-1) ref = "GA"+j;
+//             		j++;
+//             	}
+//             }
+//             out.println("<COREF ID=\""+cn.getAttributes().item(0).getNodeValue()+"\" REF=\""+ref+"\">"+cn.getTextContent()+"</COREF>");
+//         }
+//         out.println("</TXT>");
+//         out.close();
+//    }
+
     public void printOutput() throws IOException{
-    	 PrintWriter out = new PrintWriter(new FileWriter(fileName+".response"));
-    	 out.println("<TXT>");
-    	
-         int j = 1;
-         
-         for (Tree coRef:coRefToSuccessCandidateMap.keySet()) {
-        	 Node cn = corefTreetoCorefNode.get(coRef);
-        	 String ref = "";
-             ArrayList<CandidateNP> cand = coRefToSuccessCandidateMap.get(coRef);
-             for(int i = cand.size()-1; i >= 0; i--){
-             	//check if its a coref
-             	Tree cNP = cand.get(i).getNounPhrase();
-             	if(coRefPhraseTreeToSentenceMap.containsKey(cNP)){
-             		if(coRefToSuccessCandidateMap.containsKey(cNP)){
-             			continue;
-             		}
-             		Node n = corefTreetoCorefNode.get(cNP);
-             		if(n.getAttributes().getLength() == 1){
-             			
-             			out.println("<COREF ID=\""+n.getAttributes().item(0).getNodeValue()+"\">"+n.getTextContent()+"</COREF>");
-             			if(i == cand.size()-1) ref = n.getAttributes().item(0).getNodeValue();
-             		}
-             		else{
-             			out.println("<COREF ID=\""+n.getAttributes().item(0).getNodeValue()+"\" REF=\""+n.getAttributes().item(1).getNodeValue()+"\">"+n.getTextContent()+"</COREF>");
-             			if(i == cand.size()-1) ref = n.getAttributes().item(1).getNodeValue();
-             		}
-             		
-             	}
-             	else{
-             		out.println("<COREF ID=\"GA"+j+"\">"+TreeHelper.getInstance().getTextValueForTree(cNP, true)+"</COREF>");
-             		if(i == cand.size()-1) ref = "GA"+j;
-             		j++;
-             	}
-             }
-             out.println("<COREF ID=\""+cn.getAttributes().item(0).getNodeValue()+"\" REF=\""+ref+"\">"+cn.getTextContent()+"</COREF>");
-         }
-         out.println("</TXT>");
-         out.close();
+        PrintWriter out = new PrintWriter(new FileWriter(fileName+".response"));
+        out.println("<TXT>");
+
+        int xmlTagIDCounter = 1;
+
+        for (Tree coRef:coRefToSuccessCandidateMap.keySet()) {
+            Node coRefXMLNode = corefTreetoCorefNode.get(coRef);
+            String ref = null;
+            ArrayList<CandidateNP> candidateNPList = coRefToSuccessCandidateMap.get(coRef);
+            HashMap<CandidateNP, String> candidateNPToXMLTextMap = new HashMap<CandidateNP, String>();
+            for(int i = candidateNPList.size()-1; i >= 0; i--){
+                //check if its a coref
+                Tree cNP = candidateNPList.get(i).getNounPhrase();
+                String xmlNodeTextToPrint = null;
+                if(coRefToSuccessCandidateMap.containsKey(cNP)){
+                    //TODO
+                    Node xmlNode = corefTreetoCorefNode.get(cNP);
+                    ref  = xmlNode.getAttributes().item(0).getNodeValue();
+                }
+                else {
+                    String ID = "GA" + xmlTagIDCounter;
+                    xmlTagIDCounter++;
+                    if(i == candidateNPList.size()-1){
+                        ref = ID;
+                        out.println(constructXMLNode(ID, null, cNP));
+                    }
+                    //else {
+                      //  xmlNodeTextToPrint = constructXMLNode(ID, ref, cNP);
+                    //}
+
+                }
+            }
+            String x = constructXMLNode(coRefXMLNode.getAttributes().item(0).getNodeValue(), ref, coRefXMLNode.getTextContent());
+            out.println(x);
+        }
+        out.println("</TXT>");
+        out.close();
     }
+
+    private String constructXMLNode(String IDtoAdd, String referenceTag, Tree tree){
+        return  constructXMLNode(IDtoAdd, referenceTag, TreeHelper.getInstance().getTextValueForTree(tree, true));
+    }
+
+    private String constructXMLNode(String IDtoAdd, String referenceTag, String textContent){
+        String xmlTextToSend = null;
+        if(referenceTag == null){
+            xmlTextToSend =  "<COREF ID="+ IDtoAdd + "\">"+textContent+"</COREF>";
+        }
+        else {
+            xmlTextToSend =  "<COREF ID="+ IDtoAdd + "\" REF=\""+ referenceTag + "\">"+textContent+"</COREF>";
+        }
+        return xmlTextToSend;
+    }
+
 
     private Logger getLogger() {
         return Logger.getLogger(CandidateEvaluator.class);

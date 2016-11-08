@@ -274,7 +274,7 @@ public class TreeHelper {
     	List<Word> NPwords = NP.yieldWords();
         StringBuilder builder = new StringBuilder();
         for (Word w : NPwords) {
-            if(w.value().contains("COREF")){
+            if(w.value().contains("COREF") || w.value().length() == 0){
                 continue;
             }
             String word = w.value();
@@ -282,12 +282,20 @@ public class TreeHelper {
             builder.append(" ");
         }
         String NPText = builder.toString().trim();
+        if(NPText.length() <= 0 ){
+            return "O";
+        }
         String[] NPWords = NPText.split("\\s|\\n");
-    	
+
+
+
     	Hashtable<String, Integer> NERTagsForNP = new Hashtable<String, Integer>();
     	
     	for(String NPWord: NPWords){
-    		int indexOfNPWord = words.indexOf(NPWord);
+    	    int indexOfNPWord = words.indexOf(NPWord);
+            if(indexOfNPWord == -1){
+                System.out.println();
+            }
     		String NERTagForNPWord = NERtags.get(indexOfNPWord);
     		if(NERTagsForNP.containsKey(NERTagForNPWord)){
     			return NERTagForNPWord;
